@@ -1,7 +1,6 @@
 [workspace]
 
 [workspace.package]
-name = "oxakssora"
 version = "0.1.0"
 edition = "2024"
 authors = ["Akash Kumar Sinha"]
@@ -10,6 +9,8 @@ authors = ["Akash Kumar Sinha"]
 env_logger = "0.11.11"
 log = "0.4.33"
 winit = "0.30.13"
+wgpu = "30.0.0"
+pollster = "1.0.1"
 
 [package]
 name = "oxakssora"
@@ -21,3 +22,5 @@ authors.workspace = true
 env_logger.workspace = true
 log.workspace = true
 winit.workspace = true
+wgpu.workspace = true
+pollster.workspace = true
