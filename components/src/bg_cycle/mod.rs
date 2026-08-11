@@ -2,7 +2,10 @@ use std::{sync::OnceLock, time::Instant};
 
 static START_TIME: OnceLock<Instant> = OnceLock::new();
 
-pub fn bg_cycle(encoder: &mut wgpu::CommandEncoder, view: &wgpu::TextureView) {
+pub fn bg_cycle<'a>(
+    encoder: &'a mut wgpu::CommandEncoder,
+    view: &'a wgpu::TextureView,
+) -> wgpu::RenderPass<'a> {
     START_TIME.get_or_init(Instant::now);
 
     let elapsed = START_TIME.get().unwrap().elapsed().as_secs_f32();
@@ -31,5 +34,5 @@ pub fn bg_cycle(encoder: &mut wgpu::CommandEncoder, view: &wgpu::TextureView) {
         timestamp_writes: None,
         occlusion_query_set: None,
         multiview_mask: None,
-    });
+    })
 }

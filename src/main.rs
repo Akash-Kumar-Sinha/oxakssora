@@ -3,8 +3,8 @@ use winit::event_loop::EventLoop;
 use crate::window::App;
 pub use components::bg_cycle;
 
-mod window;
 mod background;
+mod window;
 
 fn main() {
     env_logger::init();

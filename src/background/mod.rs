@@ -1,8 +1,8 @@
-pub fn render_screen_background(
-    encoder: &mut wgpu::CommandEncoder,
-    view: &wgpu::TextureView,
+pub fn render_screen_background<'a>(
+    encoder: &'a mut wgpu::CommandEncoder,
+    view: &'a wgpu::TextureView,
     color: wgpu::Color,
-) {
+) -> wgpu::RenderPass<'a> {
     encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
         label: Some("Background Pass"),
         color_attachments: &[Some(wgpu::RenderPassColorAttachment {
@@ -18,5 +18,5 @@ pub fn render_screen_background(
         timestamp_writes: None,
         occlusion_query_set: None,
         multiview_mask: None,
-    });
+    })
 }

@@ -18,6 +18,7 @@ pub(crate) struct App<'a> {
     instance: Option<Arc<wgpu::Instance>>,
     device: Option<Arc<wgpu::Device>>,
     queue: Option<Arc<wgpu::Queue>>,
+    render_pipeline: Option<wgpu::RenderPipeline>,
 }
 
 impl<'a> ApplicationHandler for App<'a> {
@@ -50,23 +51,34 @@ impl<'a> ApplicationHandler for App<'a> {
         let device = Arc::new(device);
         let queue = Arc::new(queue);
 
+        // Store everything needed by surface_config()
         self.instance = Some(instance);
         self.adapter = Some(adapter);
         self.device = Some(device);
         self.queue = Some(queue);
-
         self.window = Some(window);
 
         self.surface_config();
 
-        self.window.as_ref().unwrap().request_redraw();
+        let device = self.get_device();
+
+        let format = self
+            .get_surface()
+            .get_capabilities(self.get_adapter())
+            .formats[0];
+
+        let triangle = components::triangle::triangle_render_pipeline(device, format);
+
+        self.render_pipeline = Some(triangle);
+
+        self.get_window().request_redraw();
     }
 
     fn window_event(
         &mut self,
         event_loop: &ActiveEventLoop,
         _window_id: winit::window::WindowId,
-        event: winit::event::WindowEvent,
+        event: WindowEvent,
     ) {
         match event {
             WindowEvent::CloseRequested => {
@@ -90,8 +102,13 @@ impl<'a> ApplicationHandler for App<'a> {
                                 label: Some("Render Encoder"),
                             });
 
-                        Self::render_default_bg(&mut encoder, &view);
-                        // components::bg_cycle::bg_cycle(&mut encoder, &view);
+                        let mut render_pass = components::bg_cycle::bg_cycle(&mut encoder, &view);
+
+                        render_pass.set_pipeline(self.render_pipeline.as_ref().unwrap());
+
+                        render_pass.draw(0..3, 0..1);
+
+                        drop(render_pass);
 
                         queue.submit(Some(encoder.finish()));
 
@@ -99,7 +116,7 @@ impl<'a> ApplicationHandler for App<'a> {
                     }
 
                     wgpu::CurrentSurfaceTexture::Occluded
-                    | wgpu::CurrentSurfaceTexture::Timeout => (),
+                    | wgpu::CurrentSurfaceTexture::Timeout => {}
 
                     wgpu::CurrentSurfaceTexture::Suboptimal(output) => {
                         let view = output
@@ -123,7 +140,7 @@ impl<'a> ApplicationHandler for App<'a> {
                     }
 
                     wgpu::CurrentSurfaceTexture::Validation => {
-                        unreachable!("No error scope registered, so validation errors will panic")
+                        unreachable!("No error scope registered, so validation errors will panic");
                     }
 
                     wgpu::CurrentSurfaceTexture::Lost => {
@@ -138,6 +155,7 @@ impl<'a> ApplicationHandler for App<'a> {
                 self.surface_config();
                 self.get_window().request_redraw();
             }
+
             _ => {}
         }
     }
@@ -196,10 +214,14 @@ impl<'a> App<'a> {
         self.surface = Some(surface);
     }
 
-    pub fn render_default_bg(encoder: &mut wgpu::CommandEncoder, view: &wgpu::TextureView) {
+    pub fn render_default_bg<'b>(
+        encoder: &'b mut wgpu::CommandEncoder,
+        view: &'b wgpu::TextureView,
+    ) -> wgpu::RenderPass<'b> {
         use crate::background::render_screen_background;
 
         let color = wgpu::Color::BLACK;
-        render_screen_background(encoder, view, color);
+
+        render_screen_background(encoder, view, color)
     }
 }
