@@ -1,6 +1,5 @@
-use std::sync::Arc;
-
 use log::info;
+use std::sync::Arc;
 
 use wgpu::InstanceDescriptor;
 use winit::{
@@ -74,7 +73,7 @@ impl<'a> ApplicationHandler for App<'a> {
                 info!("The close button was pressed; stopping");
                 event_loop.exit();
             }
-            
+
             WindowEvent::RedrawRequested => {
                 let surface = self.get_surface();
                 let device = self.get_device();
@@ -91,16 +90,8 @@ impl<'a> ApplicationHandler for App<'a> {
                                 label: Some("Render Encoder"),
                             });
 
-                        Self::render_screen_background(
-                            &mut encoder,
-                            &view,
-                            wgpu::Color {
-                                r: 0.0,
-                                g: 0.0,
-                                b: 0.0,
-                                a: 0.0,
-                            },
-                        );
+                        Self::render_default_bg(&mut encoder, &view);
+                        // components::bg_cycle::bg_cycle(&mut encoder, &view);
 
                         queue.submit(Some(encoder.finish()));
 
@@ -120,16 +111,7 @@ impl<'a> ApplicationHandler for App<'a> {
                                 label: Some("Render Encoder"),
                             });
 
-                        Self::render_screen_background(
-                            &mut encoder,
-                            &view,
-                            wgpu::Color {
-                                r: 0.0,
-                                g: 0.0,
-                                b: 1.0,
-                                a: 1.0,
-                            },
-                        );
+                        Self::render_default_bg(&mut encoder, &view);
 
                         queue.submit(Some(encoder.finish()));
 
@@ -148,8 +130,14 @@ impl<'a> ApplicationHandler for App<'a> {
                         self.surface_config();
                     }
                 }
+
+                self.get_window().request_redraw();
             }
 
+            WindowEvent::Resized(_) => {
+                self.surface_config();
+                self.get_window().request_redraw();
+            }
             _ => {}
         }
     }
@@ -208,26 +196,10 @@ impl<'a> App<'a> {
         self.surface = Some(surface);
     }
 
-    pub fn render_screen_background(
-        encoder: &mut wgpu::CommandEncoder,
-        view: &wgpu::TextureView,
-        color: wgpu::Color,
-    ) {
-        encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-            label: Some("Background Pass"),
-            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                view,
-                resolve_target: None,
-                ops: wgpu::Operations {
-                    load: wgpu::LoadOp::Clear(color),
-                    store: wgpu::StoreOp::Store,
-                },
-                depth_slice: None,
-            })],
-            depth_stencil_attachment: None,
-            timestamp_writes: None,
-            occlusion_query_set: None,
-            multiview_mask: None,
-        });
+    pub fn render_default_bg(encoder: &mut wgpu::CommandEncoder, view: &wgpu::TextureView) {
+        use crate::background::render_screen_background;
+
+        let color = wgpu::Color::BLACK;
+        render_screen_background(encoder, view, color);
     }
 }
