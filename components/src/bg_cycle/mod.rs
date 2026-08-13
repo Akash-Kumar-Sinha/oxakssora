@@ -1,5 +1,7 @@
 use std::{sync::OnceLock, time::Instant};
 
+use crate::background;
+
 static START_TIME: OnceLock<Instant> = OnceLock::new();
 
 pub fn bg_cycle<'a>(
@@ -19,20 +21,5 @@ pub fn bg_cycle<'a>(
         a: 1.0,
     };
 
-    encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-        label: Some("Background Pass"),
-        color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-            view,
-            resolve_target: None,
-            ops: wgpu::Operations {
-                load: wgpu::LoadOp::Clear(color),
-                store: wgpu::StoreOp::Store,
-            },
-            depth_slice: None,
-        })],
-        depth_stencil_attachment: None,
-        timestamp_writes: None,
-        occlusion_query_set: None,
-        multiview_mask: None,
-    })
+    background::render_screen_background(encoder, view, color)
 }

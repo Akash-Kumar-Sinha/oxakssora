@@ -1,17 +1,12 @@
-use winit::event_loop::EventLoop;
-
-use crate::window::App;
-pub use components::bg_cycle;
-
-mod background;
+mod renderer;
 mod window;
 
 fn main() {
     env_logger::init();
 
-    let event_loop = EventLoop::with_user_event().build().unwrap();
+    let event_loop = winit::event_loop::EventLoop::new().unwrap();
 
-    let mut app = App::default();
+    let mut app = window::App::default();
 
     event_loop.run_app(&mut app).unwrap();
 }
