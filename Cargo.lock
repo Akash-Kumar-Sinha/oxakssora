@@ -327,6 +327,7 @@ dependencies = [
 name = "components"
 version = "0.1.0"
 dependencies = [
+ "bytemuck",
  "env_logger",
  "log",
  "wgpu",
@@ -1353,6 +1354,7 @@ dependencies = [
 name = "oxakssora"
 version = "0.1.0"
 dependencies = [
+ "bytemuck",
  "components",
  "env_logger",
  "log",

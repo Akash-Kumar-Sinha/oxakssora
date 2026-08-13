@@ -1,6 +1,7 @@
+use components::{geometry::Geometry, rectangle::Rectangle};
+
 use log::info;
 use std::sync::Arc;
-
 use wgpu::InstanceDescriptor;
 use winit::{
     application::ApplicationHandler,
@@ -19,6 +20,8 @@ pub(crate) struct App<'a> {
     device: Option<Arc<wgpu::Device>>,
     queue: Option<Arc<wgpu::Queue>>,
     render_pipeline: Option<wgpu::RenderPipeline>,
+    vertex_buffer: Option<wgpu::Buffer>,
+    num_vertices: u32,
 }
 
 impl<'a> ApplicationHandler for App<'a> {
@@ -57,8 +60,11 @@ impl<'a> ApplicationHandler for App<'a> {
         self.device = Some(device);
         self.queue = Some(queue);
         self.window = Some(window);
+        self.num_vertices = Rectangle::get_len();
 
         self.surface_config();
+
+        self.vertex_buffer = Some(Rectangle::vertex_buffer(self.get_device()));
 
         let device = self.get_device();
 
@@ -67,9 +73,10 @@ impl<'a> ApplicationHandler for App<'a> {
             .get_capabilities(self.get_adapter())
             .formats[0];
 
-        let triangle = components::triangle::triangle_render_pipeline(device, format);
+        let geometry_render_pipeline =
+            components::geometry::geometry_render_pipeline(device, format);
 
-        self.render_pipeline = Some(triangle);
+        self.render_pipeline = Some(geometry_render_pipeline);
 
         self.get_window().request_redraw();
     }
@@ -106,7 +113,10 @@ impl<'a> ApplicationHandler for App<'a> {
 
                         render_pass.set_pipeline(self.render_pipeline.as_ref().unwrap());
 
-                        render_pass.draw(0..3, 0..1);
+                        render_pass
+                            .set_vertex_buffer(0, self.vertex_buffer.as_ref().unwrap().slice(..));
+
+                        render_pass.draw(0..self.num_vertices, 0..1);
 
                         drop(render_pass);
 

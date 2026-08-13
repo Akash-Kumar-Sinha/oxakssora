@@ -13,6 +13,7 @@ log = "0.4.33"
 winit = "0.30.13"
 wgpu = "30.0.0"
 pollster = "1.0.1"
+bytemuck = { version = "1.24", features = [ "derive" ] }
 
 [package]
 name = "oxakssora"
@@ -27,3 +28,4 @@ winit.workspace = true
 wgpu.workspace = true
 pollster.workspace = true
 components.workspace = true
+bytemuck.workspace = true
